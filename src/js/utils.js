@@ -15,9 +15,8 @@ export function calcTileType(index, boardSize) {
     return 'left';
   } else if ((index % boardSize) === (boardSize - 1)) {
     return 'right';
-  } else {
-    return 'center';
   }
+  return 'center';
 }
 
 export function calcHealthLevel(health) {
