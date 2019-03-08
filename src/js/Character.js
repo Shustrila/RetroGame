@@ -1,6 +1,6 @@
 export default class Character {
   constructor(level, type = 'generic') {
-    if(new.target !== undefined) throw new TypeError('class caused by using "new"');
+    if(new.target.name === 'Character') throw new TypeError('class caused by using "new"');
 
     this.level = level;
     this.attack = 0;

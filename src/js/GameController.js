@@ -1,5 +1,7 @@
-import themes from './themes.js'
-import GameStateService from './GameStateService.js';
+import themes from './themes.js';
+import {characterGenerator, generateTeam} from './generators.js';
+import arrayCharacters from './characters/arrayCharacters'
+import PositionedCharacter from './PositionedCharacter';
 
 export default class GameController {
   constructor(gamePlay, stateService) {
@@ -8,7 +10,11 @@ export default class GameController {
   }
 
   init() {
-    this.gamePlay.drawUi(themes.prairie);
+    const team = generateTeam(arrayCharacters, 1, 2);
+    const enemyTeam = generateTeam(arrayCharacters, 1, 2);
+
+    console.log(team, enemyTeam);
+    this.gamePlay.drawUi(themes['prairie']);
     // TODO: add event listeners to gamePlay events
     // TODO: load saved stated from stateService
   }
