@@ -30,3 +30,16 @@ export function calcHealthLevel(health) {
 
   return 'high';
 }
+
+export function conversionIcon(obj) {
+  const codes = {level: 0x1f396, attack: 0x2694, defence: 0x1f6e1, health: 0x2764};
+  let massege = '';
+
+  for (const i of Object.keys(obj)) {
+    if (codes[i] !== undefined) {
+      massege += ` ${String.fromCodePoint(codes[i])} ${obj[i]}`;
+    }
+  }
+
+  return massege.trim();
+}

@@ -1,4 +1,5 @@
-import Team from './Team'
+import Team from './Team';
+
 /**
  * Generates random characters
  *
@@ -10,7 +11,7 @@ export function* characterGenerator(allowedTypes, maxLevel = 1) {
   if (!Array.isArray(allowedTypes)) throw new TypeError('allowedTypes not array');
 
   while (true) {
-    const index = Math.round(Math.random() * allowedTypes.length);
+    const index = Math.floor(Math.random() * allowedTypes.length);
     const level = Math.round(Math.random() * maxLevel + 1);
 
     yield new allowedTypes[index](level);
