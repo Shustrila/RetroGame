@@ -75,3 +75,30 @@ describe('TESTS: function calcHealthLevel', () => {
     expect(healthLevel).toBe('high');
   });
 });
+
+describe('TESTS: function conversionIcon', () => {
+  test('parameter not object', () => {
+    const character = () => utils.conversionIcon('');
+
+    expect(character).toThrow('parameter not object');
+  });
+
+  test('parameter not passed', () => {
+    const character = () => utils.conversionIcon();
+
+    expect(character).toThrow('parameter not passed');
+  });
+
+  test('conversion row', () => {
+    const character = utils.conversionIcon({
+      level: 1,
+      attack: 10,
+      defence: 40,
+      health: 70,
+      type: 'generic'
+    });
+    const expected = "🎖 1 ⚔ 10 🛡 40 ❤ 70";
+
+    expect(character).toBe(expected);
+  });
+});
