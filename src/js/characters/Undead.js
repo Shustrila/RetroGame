@@ -1,10 +1,12 @@
-import Character from '../Character'
+import Character from '../Character';
 
-export default class Undead extends Character{
-  constructor (level) {
+export default class Undead extends Character {
+  constructor(level) {
     super(level, 'undead');
 
     this.attack = 25;
     this.defence = 25;
+    this.attackСells = 1;
+    this.moveCells = 4;
   }
 }

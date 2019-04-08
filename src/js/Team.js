@@ -1,35 +1,27 @@
 import PositionedCharacter from './PositionedCharacter';
 
 export default class Team {
-  constructor(arrTeam) {
-    this._characters = arrTeam;
-    this.uniquePositions = new Set();
-    this.positions = [
-      [0, 1, 8, 9, 16, 17, 24, 25, 32, 33, 40, 41, 48, 49, 56, 57],
-      [6, 7, 14, 15, 22, 23, 30, 31, 38, 39, 46, 47, 54, 55, 62, 63]
-    ]
+  constructor(arr) {
+    this.characters = arr;
+    this.fields = [];
+    this.positionedCharacter = [];
   }
 
-  set characters(num){
-    const fields = this.positions[num];
-    const values = this.uniquePositions.values();
-    let arrCharacters = [];
+  positioned() {
+    const uniquePositions = [];
 
-    while(this.uniquePositions.size < this._characters.length) {
-      const random = Math.floor(Math.random() * fields.length);
-      this.uniquePositions.add(fields[random]);
+    while (uniquePositions.length < this.characters.length) {
+      const rand = Math.floor(Math.random() * this.fields.length);
+
+      if (uniquePositions.indexOf(rand) < 0) uniquePositions.push(this.fields[rand]);
     }
 
-    for(let i = 0; i < this.uniquePositions.size; i++){
-      const obj = new PositionedCharacter(this._characters[i] ,values.next().value);
+    this.characters.forEach((item, index) => {
+      this.positionedCharacter.push(new PositionedCharacter(item, uniquePositions[index]));
+    });
 
-      arrCharacters.push(obj);
-    }
-
-    this._characters = arrCharacters;
+    return this.positionedCharacter;
   }
 
-  get characters(){
-    return this._characters;
-  }
+
 }

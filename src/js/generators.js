@@ -23,12 +23,12 @@ export function generateTeam(allowedTypes, maxLevel, characterCount) {
   // TODO: write logic here
   if (characterCount === undefined) throw new TypeError('parameter not passed characterCount');
 
-  const characters  = characterGenerator(allowedTypes, maxLevel);
-  let arrTeam = [];
+  const characters = characterGenerator(allowedTypes, maxLevel);
+  const arrTeam = [];
 
-  for (let i = 0; i < characterCount; i++){
+  for (let i = 0; i < characterCount; i++) {
     arrTeam.push(characters.next().value);
   }
 
-  return new Team(arrTeam)
+  return arrTeam;
 }

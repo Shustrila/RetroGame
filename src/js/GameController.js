@@ -1,28 +1,35 @@
 import themes from './themes.js';
 import { generateTeam } from './generators.js';
 import GameState from './GameState';
-import arrayCharacters from './characters/arrayCharacters'
-import * as utils from './utils'
+import * as utils from './utils';
 
+//team
+import UserTeam from './teams/UserTeam';
+import ComputerTeam from './teams/ComputerTeam';
+
+// characters
+import Swordsman from './characters/Swordsman';
+import Bowman from './characters/Bowman';
+import arrayCharacters from './characters/arrayCharacters';
 
 export default class GameController {
   constructor(gamePlay, stateService) {
     this.gamePlay = gamePlay;
     this.stateService = stateService;
-    this.temaUser = generateTeam(arrayCharacters, 1, 2);
-    this.teamComputer = generateTeam(arrayCharacters, 1, 2);
-    this.course = 0
+    this.temaUser = new UserTeam([new Swordsman(1), new Bowman(1)]);
+    this.teamComputer = new ComputerTeam(generateTeam(arrayCharacters, 1, 2));
+    this.characterUsed = 0;
   }
 
   init() {
-    this.temaUser.characters = 0;
-    this.teamComputer.characters = 1;
-    this.characters = [...this.temaUser.characters, ...this.teamComputer.characters];
-    this.gameState = GameState.from(this.characters);
+    this.gamePlay.drawUi(themes.prairie);
+    this.gamePlay.redrawPositions([
+      ...this.temaUser.positioned(),
+      ...this.teamComputer.positioned(),
+    ]);
+    this.gamePlay.selectCell(this.temaUser.positionedCharacter[0].position, 'yellow');
 
-    this.gamePlay.drawUi(themes['prairie']);
-    this.gamePlay.redrawPositions(this.characters);
-    this.gamePlay.selectCell(this.gameState.position);
+    console.log(this.stateService);
 
     // TODO: add event listeners to gamePlay events
     this.gamePlay.addCellEnterListener(this.onCellEnter.bind(this));
@@ -34,60 +41,82 @@ export default class GameController {
 
   onCellClick(index) {
     // TODO: react to click
-    const positions = this.characters.map(item => item.position);
+    const temaUser = this.temaUser.positionedCharacter;
+    const teamComputer = this.teamComputer.positionedCharacter;
 
-    if (positions.indexOf(index) === -1) {
-      this.gamePlay.deselectCell(this.gameState.position);
+    temaUser.forEach((item, i) => {
+      if (index === item.position) {
+        this.characterUsed = i;
+      } else {
+        this.gamePlay.deselectCell(index);
+      }
+    });
 
-      this.characters = this.characters.map(item => {
-         if(item.position === this.gameState.position) item.position = index;
-         return item
-      });
+    teamComputer.forEach((item) => {
+      if (index === item.position) {
+        console.log('attack');
+      }
+    });
 
-      this.gamePlay.redrawPositions(this.characters);
-      this.gamePlay.selectCell(this.gameState.position);
-    }
-
-
-    if (positions.indexOf(index) !== -1 && [...this.temaUser.uniquePositions].indexOf(index) === -1) {
-      this.gamePlay.showDamage(index, 30).catch(e => {
-        throw new TypeError(e)
-      }).finally(() => {
-        this.characters.forEach(item => {
-          if(item === index) {
-            item.health -= 30;
-          }
-        });
-
-        this.gamePlay.redrawPositions(this.characters)
-      });
-    }
+    // const positions = this.characters.map(item => item.position);
+    //
+    // if (positions.indexOf(index) === -1) {
+    //   this.gamePlay.deselectCell(this.gameState.position);
+    //
+    //   this.characters = this.characters.map((item) => {
+    //     if (item.position === this.gameState.position) item.position = index;
+    //     return item;
+    //   });
+    //
+    //   this.gamePlay.redrawPositions(this.characters);
+    //   this.gamePlay.selectCell(this.gameState.position);
+    // }
+    //
+    //
+    // if (positions.indexOf(index) !== -1 && [...this.temaUser.uniquePositions].indexOf(index) === -1) {
+    //   this.gamePlay.showDamage(index, 30).catch((e) => {
+    //     throw new TypeError(e);
+    //   }).finally(() => {
+    //     this.characters.forEach((item) => {
+    //       if (item === index) {
+    //         item.health -= 30;
+    //       }
+    //     });
+    //
+    //     this.gamePlay.redrawPositions(this.characters);
+    //   });
+    // }
   }
 
   onCellEnter(index) {
     // TODO: react to mouse enter
-    const positions = this.characters.map(item => item.position);
+    const temaUser = this.temaUser.positionedCharacter;
+    const teamComputer = this.teamComputer.positionedCharacter;
+    const characters = [...temaUser, ...teamComputer];
 
-    for (const i of this.characters) {
-      if (index === i.position) {
-        this.gamePlay.showCellTooltip(utils.conversionIcon(i.character), index);
+    this.gamePlay.selectCell(index, 'green');
+    this.gamePlay.setCursor('pointer');
+
+    characters.forEach((item) => {
+      if (index === item.position) {
+        this.gamePlay.showCellTooltip(utils.conversionIcon(item.character), index);
       }
-    }
+    });
 
-    if([...this.teamComputer.uniquePositions].indexOf(index) === -1) {
-      this.gamePlay.setCursor('pointer');
-    } else {
-      this.gamePlay.setCursor('no-drop');
-    }
 
-    if(positions.indexOf(index) === -1){
-      this.gamePlay.selectCell(index, 'green');
-    }
+    temaUser.forEach((item) => {
+      if (index === item.position) {
+        this.gamePlay.selectCell(index, 'yellow');
+      }
+    });
 
-    if([...this.teamComputer.uniquePositions].indexOf(index) !== -1){
-      this.gamePlay.setCursor('crosshair');
-      this.gamePlay.selectCell(index, 'red')
-    }
+
+    teamComputer.forEach((item) => {
+      if (index === item.position) {
+        this.gamePlay.setCursor('crosshair');
+        this.gamePlay.selectCell(index, 'red');
+      }
+    });
   }
 
   onCellLeave(index) {
@@ -95,7 +124,7 @@ export default class GameController {
     this.gamePlay.hideCellTooltip(index);
     this.gamePlay.setCursor('default');
 
-    if (index !== this.gameState.position){
+    if (index !== this.temaUser.positionedCharacter[this.characterUsed].position){
       this.gamePlay.deselectCell(index);
     }
   }
