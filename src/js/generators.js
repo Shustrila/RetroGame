@@ -1,5 +1,3 @@
-import Team from './Team';
-
 /**
  * Generates random characters
  *
@@ -9,7 +7,9 @@ import Team from './Team';
  */
 export function* characterGenerator(allowedTypes, maxLevel = 1) {
   // TODO: write logic here
-  if (!Array.isArray(allowedTypes)) throw new TypeError('allowedTypes not array');
+  if (!Array.isArray(allowedTypes)) {
+    throw new TypeError('allowedTypes not array');
+  }
 
   while (true) {
     const index = Math.floor(Math.random() * allowedTypes.length);
@@ -21,7 +21,9 @@ export function* characterGenerator(allowedTypes, maxLevel = 1) {
 
 export function generateTeam(allowedTypes, maxLevel, characterCount) {
   // TODO: write logic here
-  if (characterCount === undefined) throw new TypeError('parameter not passed characterCount');
+  if (characterCount === undefined) {
+    throw new TypeError('parameter not passed characterCount');
+  }
 
   const characters = characterGenerator(allowedTypes, maxLevel);
   const arrTeam = [];

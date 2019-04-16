@@ -36,7 +36,10 @@ export function conversionIcon(obj) {
   if (typeof obj !== 'object') throw new TypeError('parameter not object');
 
   const codes = {
-    level: 0x1f396, attack: 0x2694, defence: 0x1f6e1, health: 0x2764,
+    level: 0x1f396,
+    attack: 0x2694,
+    defence: 0x1f6e1,
+    health: 0x2764,
   };
   let massege = '';
 

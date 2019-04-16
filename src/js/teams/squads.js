@@ -9,6 +9,6 @@ import arrayCharacters from '../characters/arrayCharacters';
 import { generateTeam } from '../generators';
 
 
-export let userSquad = new User([new Swordsman(1), new Bowman(1)]);
+export const userSquad = new User([new Swordsman(1), new Bowman(1)]);
 
-export let computerSquad = new Computer(generateTeam(arrayCharacters, 1, 2));
+export const computerSquad = new Computer(generateTeam(arrayCharacters, 1, 2));

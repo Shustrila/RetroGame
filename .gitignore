@@ -1,6 +1,6 @@
 docs
 .idea
-.dist
+.dist/
 .DS_Store
 
 # Logs

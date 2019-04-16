@@ -13,11 +13,6 @@ class Character {
       throw new TypeError('class caused by using "new"');
     }
   }
-
-  levelUp() {
-    this.level += 1;
-    this.health = 100;
-  }
 }
 
 export default Character;
