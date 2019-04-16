@@ -1,27 +1,27 @@
 import PositionedCharacter from './PositionedCharacter';
 
 export default class Team {
-  constructor(arr) {
-    this.characters = arr;
+  constructor() {
+    this.type = null;
+    this.all = [];
     this.fields = [];
-    this.positionedCharacter = [];
+    this.uniqueIndexs = new Set();
   }
 
-  positioned() {
-    const uniquePositions = [];
+  _positioned(arr) {
+    const arrUniqueIndexs = [];
 
-    while (uniquePositions.length < this.characters.length) {
-      const rand = Math.floor(Math.random() * this.fields.length);
+    while (this.uniqueIndexs.size < arr.length) {
+      const random = Math.floor(Math.random() * this.fields.length);
 
-      if (uniquePositions.indexOf(rand) < 0) uniquePositions.push(this.fields[rand]);
+      if (!this.uniqueIndexs.has(this.fields[random])) {
+        this.uniqueIndexs.add(this.fields[random]);
+        arrUniqueIndexs.push(this.fields[random]);
+      }
     }
 
-    this.characters.forEach((item, index) => {
-      this.positionedCharacter.push(new PositionedCharacter(item, uniquePositions[index]));
+    arrUniqueIndexs.forEach((item, i) => {
+      this.all.push(new PositionedCharacter(arr[i], item));
     });
-
-    return this.positionedCharacter;
   }
-
-
 }

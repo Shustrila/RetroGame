@@ -6,5 +6,9 @@
         "node": true
     },
     "rules": {
+        "no-underscore-dangle": "off",
+        "no-plusplus": "off",
+        "no-shadow": "off",
+        "no-param-reassign": "off"
     }
 }

@@ -1,5 +1,7 @@
 docs
 .idea
+.dist
+.DS_Store
 
 # Logs
 logs

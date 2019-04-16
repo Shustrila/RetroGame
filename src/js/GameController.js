@@ -1,120 +1,159 @@
-import themes from './themes.js';
-import { generateTeam } from './generators.js';
+import themes from './themes';
 import GameState from './GameState';
 import * as utils from './utils';
+import GameMechanics from './GameMechanics';
 
-//team
-import UserTeam from './teams/UserTeam';
-import ComputerTeam from './teams/ComputerTeam';
-
-// characters
-import Swordsman from './characters/Swordsman';
-import Bowman from './characters/Bowman';
-import arrayCharacters from './characters/arrayCharacters';
+import { userSquad, computerSquad } from './teams/squads';
 
 export default class GameController {
   constructor(gamePlay, stateService) {
     this.gamePlay = gamePlay;
     this.stateService = stateService;
-    this.temaUser = new UserTeam([new Swordsman(1), new Bowman(1)]);
-    this.teamComputer = new ComputerTeam(generateTeam(arrayCharacters, 1, 2));
-    this.characterUsed = 0;
+    // squads in game
+    this.selectCharacter = 0;
+    this.nextPlayer = 'computer';
+    this.userSquad = userSquad.all;
+    this.computerSquad = computerSquad.all;
+    this.allSquad = [];
+    // level
+    this.level = themes.prairie;
+    // game mechanics
+    this.gameMechanics = {};
   }
 
   init() {
-    this.gamePlay.drawUi(themes.prairie);
-    this.gamePlay.redrawPositions([
-      ...this.temaUser.positioned(),
-      ...this.teamComputer.positioned(),
-    ]);
-    this.gamePlay.selectCell(this.temaUser.positionedCharacter[0].position, 'yellow');
-
-    console.log(this.stateService);
-
     // TODO: add event listeners to gamePlay events
+    this.gamePlay.addLoadGameListener(this.onLoadGame.bind(this));
+    this.gamePlay.addNewGameListener(this.onNewGame.bind(this));
+    this.gamePlay.addSaveGameListener(this.onSaveGame.bind(this));
+    this.gamePlay.addCellClickListener(this.onCellClick.bind(this));
     this.gamePlay.addCellEnterListener(this.onCellEnter.bind(this));
     this.gamePlay.addCellLeaveListener(this.onCellLeave.bind(this));
-    this.gamePlay.addCellClickListener(this.onCellClick.bind(this));
 
     // TODO: load saved stated from stateServic
+    this.onLoadGame();
+  }
+
+  onNewGame() {
+    this.selectCharacter = 0;
+    this.nextPlayer = 'computer';
+    this.userSquad = userSquad.all;
+    this.computerSquad = computerSquad.all;
+    this.allSquad = [];
+    this.level = themes.prairie;
+
+    this.onSaveGame();
+    this.onLoadGame();
+  }
+
+  onSaveGame() {
+    this.stateService.save(GameState.from({
+      selectCharacter: this.selectCharacter,
+      nextPlayer: this.nextPlayer,
+      userSquad: this.userSquad,
+      computerSquad: this.computerSquad,
+      level: this.level,
+    }));
+  }
+
+  onLoadGame() {
+    const state = this.stateService.load();
+
+    if (state !== null) {
+      this.selectCharacter = state.selectCharacter;
+      this.nextPlayer = state.nextPlayer;
+      this.userSquad = state.userSquad;
+      this.computerSquad = state.computerSquad;
+      this.level = state.level;
+      this.allSquad = [...this.userSquad, ...this.computerSquad];
+      this.gameMechanics = new GameMechanics(this.userSquad[this.selectCharacter]);
+
+      this.gamePlay.drawUi(this.level);
+      this.gamePlay.redrawPositions(this.allSquad);
+      this.gamePlay.selectCell(this.userSquad[this.selectCharacter].position);
+    } else {
+      this.onNewGame();
+    }
+  }
+
+  async attack(index, attacker, target) {
+    const formula = Math.max(attacker.attack - target.defence, attacker.attack * 0.1);
+
+    target.health -= formula;
+
+    await this.gamePlay.showDamage(index, formula);
   }
 
   onCellClick(index) {
     // TODO: react to click
-    const temaUser = this.temaUser.positionedCharacter;
-    const teamComputer = this.teamComputer.positionedCharacter;
+    this.gameMechanics.fieldsForMove().forEach((item) => {
+      const position = this.allSquad.map(item => item.position);
 
-    temaUser.forEach((item, i) => {
-      if (index === item.position) {
-        this.characterUsed = i;
-      } else {
-        this.gamePlay.deselectCell(index);
+      if (item === index && position.indexOf(index) === -1) {
+
+
+        this.nextPlayer = (this.nextPlayer === 'computer') ? 'user' : 'computer';
+        this.gamePlay.deselectCell(this.userSquad[this.selectCharacter].position);
+        this.userSquad[this.selectCharacter].position = index;
+        this.gamePlay.selectCell(this.userSquad[this.selectCharacter].position);
       }
     });
 
-    teamComputer.forEach((item) => {
-      if (index === item.position) {
-        console.log('attack');
+    this.gameMechanics.fieldsForAttack().forEach((item) => {
+      const computer = this.computerSquad.map(item => item.position);
+
+      if (item === index && computer.indexOf(index) !== -1) {
+        const attacker = this.userSquad[this.selectCharacter].character;
+        const target = this.computerSquad.filter(item => item.position === index);
+
+        this.attack(index, attacker, target[0].character);
       }
     });
 
-    // const positions = this.characters.map(item => item.position);
-    //
-    // if (positions.indexOf(index) === -1) {
-    //   this.gamePlay.deselectCell(this.gameState.position);
-    //
-    //   this.characters = this.characters.map((item) => {
-    //     if (item.position === this.gameState.position) item.position = index;
-    //     return item;
-    //   });
-    //
-    //   this.gamePlay.redrawPositions(this.characters);
-    //   this.gamePlay.selectCell(this.gameState.position);
-    // }
-    //
-    //
-    // if (positions.indexOf(index) !== -1 && [...this.temaUser.uniquePositions].indexOf(index) === -1) {
-    //   this.gamePlay.showDamage(index, 30).catch((e) => {
-    //     throw new TypeError(e);
-    //   }).finally(() => {
-    //     this.characters.forEach((item) => {
-    //       if (item === index) {
-    //         item.health -= 30;
-    //       }
-    //     });
-    //
-    //     this.gamePlay.redrawPositions(this.characters);
-    //   });
-    // }
+    this.userSquad.forEach((item, i, arr) => {
+      if (item.position === index && this.userSquad[this.selectCharacter].position !== index) {
+        arr.forEach((item, i) => {
+          this.gamePlay.deselectCell(this.userSquad[this.selectCharacter].position);
+          if (item.position === index) this.selectCharacter = i;
+          this.gamePlay.selectCell(this.userSquad[this.selectCharacter].position);
+        });
+      }
+    });
+
+    this.gameMechanics = new GameMechanics(this.userSquad[this.selectCharacter]);
+    this.gamePlay.redrawPositions(this.allSquad);
+    this.onSaveGame();
   }
 
   onCellEnter(index) {
     // TODO: react to mouse enter
-    const temaUser = this.temaUser.positionedCharacter;
-    const teamComputer = this.teamComputer.positionedCharacter;
-    const characters = [...temaUser, ...teamComputer];
+    this.gameMechanics.fieldsForMove().forEach((item) => {
+      const position = this.allSquad.map(item => item.position);
 
-    this.gamePlay.selectCell(index, 'green');
-    this.gamePlay.setCursor('pointer');
+      if (item === index && position.indexOf(index) === -1) {
+        this.gamePlay.setCursor('pointer');
+        this.gamePlay.selectCell(index, 'green');
+      }
+    });
 
-    characters.forEach((item) => {
+    this.gameMechanics.fieldsForAttack().forEach((item) => {
+      const computer = this.computerSquad.map(item => item.position);
+
+      if (item === index && computer.indexOf(index) !== -1) {
+        this.gamePlay.setCursor('crosshair');
+        this.gamePlay.selectCell(index, 'red');
+      }
+    });
+
+    this.allSquad.forEach((item) => {
       if (index === item.position) {
         this.gamePlay.showCellTooltip(utils.conversionIcon(item.character), index);
       }
     });
 
-
-    temaUser.forEach((item) => {
-      if (index === item.position) {
-        this.gamePlay.selectCell(index, 'yellow');
-      }
-    });
-
-
-    teamComputer.forEach((item) => {
-      if (index === item.position) {
-        this.gamePlay.setCursor('crosshair');
-        this.gamePlay.selectCell(index, 'red');
+    this.userSquad.forEach((item) => {
+      if (item.position === index && this.userSquad[this.selectCharacter].position !== index) {
+        this.gamePlay.setCursor('pointer');
       }
     });
   }
@@ -124,7 +163,8 @@ export default class GameController {
     this.gamePlay.hideCellTooltip(index);
     this.gamePlay.setCursor('default');
 
-    if (index !== this.temaUser.positionedCharacter[this.characterUsed].position){
+    if (this.allSquad.indexOf(index) === -1
+        && this.userSquad[this.selectCharacter].position !== index) {
       this.gamePlay.deselectCell(index);
     }
   }
