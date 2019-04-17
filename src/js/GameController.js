@@ -32,6 +32,7 @@ export default class GameController {
     this.gamePlay.addLoadGameListener(this.onLoadGame.bind(this));
     this.gamePlay.addNewGameListener(this.onNewGame.bind(this));
     this.gamePlay.addSaveGameListener(this.onSaveGame.bind(this));
+
     this.gamePlay.addCellClickListener(this.onCellClick.bind(this));
     this.gamePlay.addCellEnterListener(this.onCellEnter.bind(this));
     this.gamePlay.addCellLeaveListener(this.onCellLeave.bind(this));
@@ -96,13 +97,12 @@ export default class GameController {
     const valB = attacker.attack * 0.1;
     const formula = Math.max(valA, valB);
 
-    this.gamePlay.showDamage(index, formula).finally(() => {
-      if (target.health - formula > 0) {
-        target.health -= formula;
-      } else {
-        console.log(target);
-      }
-    });
+    this.gamePlay.showDamage(index, formula);
+    if (target.health - formula > 0) {
+      target.health -= formula;
+    } else {
+      console.log(target);
+    }
   }
 
   _actionComputer() {
