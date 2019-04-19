@@ -1,12 +1,14 @@
 class GameMechanics {
   constructor(character) {
     this.border = 8;
-    this.cell = character.position;
-    this.y = Math.floor(this.cell / this.border);
-    this.ci = Math.floor((this.cell / this.border - this.y) * 10);
-    this.x = (this.ci > 3) ? this.ci - 1 : this.ci;
+    this.position = character.position;
+    this.y = Math.floor(this.position / this.border);
+    this.x = this.position % this.border;
     this.attackCells = character.character.attackCells;
     this.moveCells = character.character.moveCells;
+
+    this.allowedAttack = this._fieldsForAttack();
+    this.allowedMove = this._fieldsForMove();
   }
 
   _generateArr(arr) {
@@ -18,7 +20,7 @@ class GameMechanics {
       .filter(item => item !== undefined);
   }
 
-  fieldsForAttack() {
+  _fieldsForAttack() {
     const map = [];
 
     for (let n = 0; n < this.border; n++) {
@@ -26,11 +28,15 @@ class GameMechanics {
 
       if (n >= this.y - this.attackCells && n <= this.y + this.attackCells) {
         for (let i = 0; i < this.border; i++) {
-          arr.push((() => {
-            if (n === this.y && i === this.x) return 0;
-            if (i >= this.x - this.attackCells && i <= this.x + this.attackCells) return 1;
-            return 0;
-          })());
+          let number = 0;
+
+          if (n === this.y && i === this.x) {
+            number = 0;
+          } else if (i >= this.x - this.attackCells && i <= this.x + this.attackCells) {
+            number = 1;
+          }
+
+          arr.push(number);
         }
 
         map.push(arr);
@@ -42,24 +48,26 @@ class GameMechanics {
     return this._generateArr(map);
   }
 
-  fieldsForMove() {
+  _fieldsForMove() {
     const map = [];
 
     for (let n = 0; n < this.border; n++) {
       const arr = [];
-
       if (n >= this.y - this.moveCells && n <= this.y + this.moveCells) {
         for (let i = 0; i < this.border; i++) {
-          arr.push((() => {
-            if (n === this.y && i === this.x) return 0;
-            if (i === this.x) return 1;
-            // if (i === (this.ci - this.moveCells) + n) return 1;
-            // if (i === (this.ci + this.moveCells) - n) return 1;
-            if (n === this.y
-                && i >= this.x - this.moveCells
-                && i <= this.x + this.moveCells) return 1;
-            return 0;
-          })());
+          let number = 0;
+
+          if (n === this.y && i === this.x) {
+            number = 0;
+          } else if (i === this.x + (n - this.y) || i === this.x - (n - this.y)) {
+            number = 1;
+          } else if (i === this.x) {
+            number = 1;
+          } else if (n === this.y && i >= this.x - this.moveCells && i <= this.x + this.moveCells) {
+            number = 1;
+          }
+
+          arr.push(number);
         }
 
         map.push(arr);

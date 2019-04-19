@@ -1,4 +1,4 @@
-import * as utils from '../utils.js'
+import * as utils from '../utils.js';
 
 describe('TESTS: function calcTileType', () => {
   test('top-left', () => {

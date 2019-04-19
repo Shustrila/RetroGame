@@ -9,6 +9,12 @@
         "no-underscore-dangle": "off",
         "no-plusplus": "off",
         "no-shadow": "off",
-        "no-param-reassign": "off"
+        "no-param-reassign": "off",
+        "no-restricted-syntax": "off",
+        "no-alert": "off",
+        "class-methods-use-this": "off",
+        "no-undef": "off",
+        "comma-dangle": "off",
+        "no-multi-spaces": "off"
     }
 }
