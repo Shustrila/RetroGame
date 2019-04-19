@@ -2,6 +2,7 @@ import themes from './themes';
 import GameState from './GameState';
 import * as utils from './utils';
 import GameMechanics from './GameMechanics';
+import GamePlay from './GamePlay';
 
 // team
 import User from './teams/User';
@@ -28,7 +29,6 @@ export default class GameController {
 
     this.allSquad = [];
     this.USC = {}; // properties UserSelectCharacter
-    this.CSC = {}; // properties ComputerSelectCharacter
 
     // Game mechanics
     this.gameMechanics = {};
@@ -60,6 +60,7 @@ export default class GameController {
 
     this.onSaveGame();
     this.onLoadGame();
+    GamePlay.showMessage('New Game');
   }
 
   onSaveGame() {
@@ -98,6 +99,10 @@ export default class GameController {
       this.gamePlay.selectCell(this.USC.position);
     } else {
       this.onNewGame();
+    }
+
+    if (this.nextPlayer === 'user') {
+      this._actionComputer();
     }
   }
 
@@ -173,10 +178,12 @@ export default class GameController {
     }
 
     if (this.userSquad.length === 0) {
+      GamePlay.showMessage('Game over!!!');
       this.onNewGame();
     }
 
     if (userCharacterLength > this.userSquad.length) {
+      this.gamePlay.deselectCell(this.USC.position);
       this.selectCharacter = 0;
       this.USC = this.userSquad[this.selectCharacter];
       this.gamePlay.selectCell(this.USC.position);
@@ -184,116 +191,138 @@ export default class GameController {
   }
 
   _actionComputer() {
-    const randomCharacter = Math.floor(Math.random() * this.computerSquad.length);
-    const computer = this.computerSquad[randomCharacter];
-    const mechanics = new GameMechanics(computer);
+    let index = null;
+    let mechanics = {};
+    const purposes = [];
 
-    for (const userCharacter of this.userSquad) {
-      if (mechanics.allowedAttack.indexOf(userCharacter.position) !== -1) {
-        const index = userCharacter.position;
-        const target = this.userSquad.filter(item => item.position === index);
+    for (let i = 0; i < this.computerSquad.length; i++) {
+      mechanics = new GameMechanics(this.computerSquad[i]);
 
-        this._attack(index, computer.character, target[0].character, 'computer');
-      } else {
-        let occupiedIndexs = [];
-
-        occupiedIndexs = mechanics.allowedMove.filter((item) => {
-          const userIndexs = this.userSquad.map(item => item.position).indexOf(item);
-          const comuterIndexs = this.computerSquad.map(item => item.position).indexOf(item);
-
-          return !!((userIndexs === -1 || comuterIndexs === -1));
-        });
-
-        const randomIndex = Math.floor(Math.random() * occupiedIndexs.length);
-
-        computer.position = occupiedIndexs[randomIndex];
-      }
+      this.userSquad.map(user => user.position).forEach((item) => {
+        if (mechanics.allowedAttack.indexOf(item) !== -1) {
+          index = i;
+          purposes.push(item);
+          return false;
+        }
+      });
     }
+
+    if (index !== null) {
+      const indexTarget = Math.floor(Math.random() * purposes.length);
+
+      this.userSquad
+        .filter(user => user.position === purposes[indexTarget])
+        .forEach((item) => {
+          const computer = this.computerSquad[index].character;
+
+          this._attack(purposes[indexTarget], computer, item.character, 'computer');
+        });
+    } else {
+      const busyIndexes = this.allSquad.map(item => item.position);
+
+      index = Math.floor(Math.random() * this.computerSquad.length);
+      mechanics = new GameMechanics(this.computerSquad[index]);
+
+      const availableIndexes = mechanics.allowedMove.filter(item => !(item === busyIndexes));
+      const randomIndex = Math.floor(Math.random() * availableIndexes.length);
+
+      this.computerSquad[index].position = availableIndexes[randomIndex];
+    }
+
+    this.nextPlayer = 'computer';
+    this.gamePlay.redrawPositions(this.allSquad);
   }
 
   onCellClick(index) {
     // TODO: react to click
+    if (this.nextPlayer === 'computer') {
+      this.gameMechanics.allowedMove.forEach((item) => {
+        const position = this.allSquad.map(item => item.position);
 
-    this.gameMechanics.allowedMove.forEach((item) => {
-      const position = this.allSquad.map(item => item.position);
-
-      if (item === index && position.indexOf(index) === -1) {
-        this.nextPlayer = (this.nextPlayer === 'computer') ? 'user' : 'computer';
-        this.gamePlay.deselectCell(this.USC.position);
-        this.USC.position = index;
-        this.gamePlay.selectCell(this.USC.position);
-        this._actionComputer();
-      }
-    });
-
-    this.gameMechanics.allowedAttack.forEach((item) => {
-      const computer = this.computerSquad.map(item => item.position);
-
-      if (item === index && computer.indexOf(index) !== -1) {
-        const attacker = this.USC.character;
-        const target = this.computerSquad.filter(item => item.position === index);
-
-        this._attack(index, attacker, target[0].character);
-        this._actionComputer();
-      }
-    });
-
-    this.userSquad.forEach((item, i, arr) => {
-      if (item.position === index && this.USC.position !== index) {
-        arr.forEach((item, i) => {
+        if (item === index && position.indexOf(index) === -1) {
+          this.nextPlayer = (this.nextPlayer === 'computer') ? 'user' : 'computer';
           this.gamePlay.deselectCell(this.USC.position);
-          if (item.position === index) this.selectCharacter = i;
-          this.USC = this.userSquad[this.selectCharacter];
+          this.USC.position = index;
           this.gamePlay.selectCell(this.USC.position);
-        });
-      }
-    });
+          this._actionComputer();
+        }
+      });
 
-    this.gameMechanics = new GameMechanics(this.USC);
-    this.gamePlay.redrawPositions(this.allSquad);
-    this.onSaveGame();
+      this.gameMechanics.allowedAttack.forEach((item) => {
+        const computer = this.computerSquad.map(item => item.position);
+
+        if (item === index && computer.indexOf(index) !== -1) {
+          const target = this.computerSquad.filter(item => item.position === index);
+
+          this._attack(index, this.USC.character, target[0].character, 'user');
+          this._actionComputer();
+        }
+      });
+
+      this.userSquad.forEach((item, i, arr) => {
+        if (item.position === index && this.USC.position !== index) {
+          arr.forEach((item, i) => {
+            this.gamePlay.deselectCell(this.USC.position);
+            if (item.position === index) this.selectCharacter = i;
+            this.USC = this.userSquad[this.selectCharacter];
+            this.gamePlay.selectCell(this.USC.position);
+          });
+        }
+      });
+
+      this.gameMechanics = new GameMechanics(this.USC);
+      this.gamePlay.redrawPositions(this.allSquad);
+      this.nextPlayer = 'user';
+      this.onSaveGame();
+    } else {
+      GamePlay.showError('Wait for the computer to finish running!');
+    }
   }
 
   onCellEnter(index) {
     // TODO: react to mouse enter
-    this.gameMechanics.allowedMove.forEach((item) => {
-      const position = this.allSquad.map(item => item.position);
+    if (this.nextPlayer === 'computer') {
+      this.gameMechanics.allowedMove.forEach((item) => {
+        const position = this.allSquad.map(item => item.position);
 
-      if (item === index && position.indexOf(index) === -1) {
-        this.gamePlay.setCursor('pointer');
-        this.gamePlay.selectCell(index, 'green');
-      }
-    });
+        if (item === index && position.indexOf(index) === -1) {
+          this.gamePlay.setCursor('pointer');
+          this.gamePlay.selectCell(index, 'green');
+        }
+      });
 
-    this.gameMechanics.allowedAttack.forEach((item) => {
-      const computer = this.computerSquad.map(item => item.position);
+      this.gameMechanics.allowedAttack.forEach((item) => {
+        const computer = this.computerSquad.map(item => item.position);
 
-      if (item === index && computer.indexOf(index) !== -1) {
-        this.gamePlay.setCursor('crosshair');
-        this.gamePlay.selectCell(index, 'red');
-      }
-    });
+        if (item === index && computer.indexOf(index) !== -1) {
+          this.gamePlay.setCursor('crosshair');
+          this.gamePlay.selectCell(index, 'red');
+        }
+      });
 
-    this.allSquad.forEach((item) => {
-      if (index === item.position) {
-        this.gamePlay.showCellTooltip(utils.conversionIcon(item.character), index);
-      }
-    });
+      this.allSquad.forEach((item) => {
+        if (index === item.position) {
+          this.gamePlay.showCellTooltip(utils.conversionIcon(item.character), index);
+        }
+      });
 
-    this.userSquad.forEach((item) => {
-      if (item.position === index && this.USC.position !== index) {
-        this.gamePlay.setCursor('pointer');
-      }
-    });
+      this.userSquad.forEach((item) => {
+        if (item.position === index && this.USC.position !== index) {
+          this.gamePlay.setCursor('pointer');
+        }
+      });
+    }
   }
 
   onCellLeave(index) {
     // TODO: react to mouse leave
-    this.gamePlay.hideCellTooltip(index);
-    this.gamePlay.setCursor('default');
+    if (this.nextPlayer === 'computer') {
+      this.gamePlay.hideCellTooltip(index);
+      this.gamePlay.setCursor('default');
 
-    if (this.allSquad.indexOf(index) === -1 && this.USC.position !== index) {
-      this.gamePlay.deselectCell(index);
+      if (this.allSquad.indexOf(index) === -1 && this.USC.position !== index) {
+        this.gamePlay.deselectCell(index);
+      }
     }
   }
 }
