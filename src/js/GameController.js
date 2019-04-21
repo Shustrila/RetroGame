@@ -60,7 +60,6 @@ export default class GameController {
 
     this.onSaveGame();
     this.onLoadGame();
-    GamePlay.showMessage('New Game');
   }
 
   onSaveGame() {
@@ -88,7 +87,6 @@ export default class GameController {
 
       this.allSquad = [...this.userSquad, ...this.computerSquad];
       this.USC = this.userSquad[this.selectCharacter];
-      this.CSC = this.computerSquad[this.selectCharacter];
 
       // mechanics
       this.gameMechanics = new GameMechanics(this.USC);
@@ -101,94 +99,11 @@ export default class GameController {
       this.onNewGame();
     }
 
-    if (this.nextPlayer === 'user') {
+    if (state.nextPlayer === 'user') {
       this._actionComputer();
     }
   }
 
-  _levelUp() {
-    let generateComputer = [];
-    let generateUser = [];
-
-    this.level += 1;
-
-    if (this.level > 4) {
-      this.level = 1;
-    }
-
-    this.userSquad.forEach(item => generateUser.push(item.character));
-
-    if (this.level === 1) {
-      generateUser = new User([new Swordsman(1), new Bowman(1)]);
-      generateComputer = generateTeam(arrayCharacters, 2, generateUser.length);
-      this.themes = themes.prairie;
-    }
-
-    if (this.level === 2) {
-      generateUser.push(characterGenerator(arrayCharacters, 1).next().value);
-      generateComputer = generateTeam(arrayCharacters, 2, this.userSquad.length);
-      this.themes = themes.arctic;
-    }
-
-    if (this.level === 3) {
-      generateUser.push(characterGenerator(arrayCharacters, 2).next().value);
-      generateComputer = generateTeam(arrayCharacters, 3, this.userSquad.length);
-      this.themes = themes.desert;
-    }
-
-    if (this.level === 4) {
-      generateUser.push(characterGenerator(arrayCharacters, 3).next().value);
-      generateComputer = generateTeam(arrayCharacters, 4, this.userSquad.length);
-      this.themes = themes.mountain;
-    }
-
-    this.userSquad = new User(generateUser).all;
-    this.computerSquad = new Computer(generateComputer).all;
-    this.allSquad = [...this.userSquad, ...this.computerSquad];
-
-    this.gamePlay.drawUi(this.themes);
-    this.gamePlay.redrawPositions(this.allSquad);
-    this.gamePlay.selectCell(this.USC.position);
-    this.onSaveGame();
-  }
-
-  _attack(index, attacker, target, player = 'user') {
-    const valA = attacker.attack - target.defence;
-    const valB = attacker.attack * 0.1;
-    const formula = Math.max(valA, valB);
-    const userCharacterLength = this.computerSquad.length;
-
-    this.gamePlay.showDamage(index, formula);
-
-    if (target.health - formula > 0) {
-      target.health -= formula;
-    } else {
-      if (player === 'user') {
-        this.computerSquad = this.computerSquad.filter(item => item.position !== index);
-      } else {
-        this.userSquad = this.userSquad.filter(item => item.position !== index);
-      }
-
-      this.allSquad = [...this.userSquad, ...this.computerSquad];
-      this.gamePlay.redrawPositions(this.allSquad);
-    }
-
-    if (this.computerSquad.length === 0) {
-      this._levelUp();
-    }
-
-    if (this.userSquad.length === 0) {
-      GamePlay.showMessage('Game over!!!');
-      this.onNewGame();
-    }
-
-    if (userCharacterLength > this.userSquad.length) {
-      this.gamePlay.deselectCell(this.USC.position);
-      this.selectCharacter = 0;
-      this.USC = this.userSquad[this.selectCharacter];
-      this.gamePlay.selectCell(this.USC.position);
-    }
-  }
 
   _actionComputer() {
     let index = null;
@@ -198,13 +113,15 @@ export default class GameController {
     for (let i = 0; i < this.computerSquad.length; i++) {
       mechanics = new GameMechanics(this.computerSquad[i]);
 
-      this.userSquad.map(user => user.position).forEach((item) => {
-        if (mechanics.allowedAttack.indexOf(item) !== -1) {
-          index = i;
-          purposes.push(item);
-          return false;
-        }
-      });
+      this.userSquad
+        .map(user => user.position)
+        .forEach((item) => {
+          if (mechanics.allowedAttack.indexOf(item) !== -1) {
+            index = i;
+            purposes.push(item);
+            return false;
+          }
+        });
     }
 
     if (index !== null) {
@@ -230,12 +147,16 @@ export default class GameController {
     }
 
     this.nextPlayer = 'computer';
+    this.allSquad = [...this.userSquad, ...this.computerSquad];
     this.gamePlay.redrawPositions(this.allSquad);
+    this.onSaveGame();
   }
 
   onCellClick(index) {
     // TODO: react to click
-    if (this.nextPlayer === 'computer') {
+    const state = this.stateService.load();
+
+    if (state.nextPlayer === 'computer') {
       this.gameMechanics.allowedMove.forEach((item) => {
         const position = this.allSquad.map(item => item.position);
 
@@ -273,7 +194,6 @@ export default class GameController {
       this.gameMechanics = new GameMechanics(this.USC);
       this.gamePlay.redrawPositions(this.allSquad);
       this.nextPlayer = 'user';
-      this.onSaveGame();
     } else {
       GamePlay.showError('Wait for the computer to finish running!');
     }
@@ -281,7 +201,11 @@ export default class GameController {
 
   onCellEnter(index) {
     // TODO: react to mouse enter
-    if (this.nextPlayer === 'computer') {
+    const state = this.stateService.load();
+
+    this.gamePlay.setCursor('not-allowed');
+
+    if (state.nextPlayer === 'computer') {
       this.gameMechanics.allowedMove.forEach((item) => {
         const position = this.allSquad.map(item => item.position);
 
@@ -316,13 +240,122 @@ export default class GameController {
 
   onCellLeave(index) {
     // TODO: react to mouse leave
-    if (this.nextPlayer === 'computer') {
-      this.gamePlay.hideCellTooltip(index);
-      this.gamePlay.setCursor('default');
+    this.gamePlay.hideCellTooltip(index);
+    this.gamePlay.setCursor('default');
 
-      if (this.allSquad.indexOf(index) === -1 && this.USC.position !== index) {
-        this.gamePlay.deselectCell(index);
+    if (this.allSquad.indexOf(index) === -1 && this.USC.position !== index) {
+      this.gamePlay.deselectCell(index);
+    }
+  }
+
+  _levelUpCharacter(arr) {
+    arr.forEach((item) => {
+      item.level += 1;
+      const calc = (1.8 - item.health / 100);
+      const attack = Math.max(item.attack, item.attack * calc);
+      const defence = Math.max(item.defence, item.defence * calc);
+
+      item.attack = Math.floor(attack);
+      item.defence = Math.floor(defence);
+      item.health += 80;
+
+      if (item.health >= 100) {
+        item.health = 100;
       }
+    });
+  }
+
+  _levelUp() {
+    let generateComputer = [];
+    const generateUser = [];
+
+    this.level += 1;
+
+    if (this.level > 4) {
+      this.level = 1;
+    }
+
+    this.userSquad.forEach(item => generateUser.push(item.character));
+
+    if (this.level === 1) {
+      this._levelUpCharacter(generateUser);
+      generateComputer = generateTeam(arrayCharacters, 2, generateUser.length);
+      this.themes = themes.prairie;
+    }
+
+    if (this.level === 2) {
+      generateUser.push(characterGenerator(arrayCharacters, 1).next().value);
+      this._levelUpCharacter(generateUser);
+      generateComputer = generateTeam(arrayCharacters, 2, generateUser.length);
+      this._levelUpCharacter(generateComputer);
+      this.themes = themes.arctic;
+    }
+
+    if (this.level === 3) {
+      generateUser.push(characterGenerator(arrayCharacters, 2).next().value);
+      this._levelUpCharacter(generateUser);
+      generateComputer = generateTeam(arrayCharacters, 3, generateUser.length);
+      this._levelUpCharacter(generateComputer);
+      this.themes = themes.desert;
+    }
+
+    if (this.level === 4) {
+      generateUser.push(characterGenerator(arrayCharacters, 3).next().value);
+      this._levelUpCharacter(generateUser);
+      generateComputer = generateTeam(arrayCharacters, 4, generateUser.length);
+      this._levelUpCharacter(generateComputer);
+      this.themes = themes.mountain;
+    }
+
+    this.userSquad = new User(generateUser).all;
+    this.computerSquad = new Computer(generateComputer).all;
+    this.allSquad = [...this.userSquad, ...this.computerSquad];
+    this.USC = this.userSquad[this.selectCharacter];
+    this.gameMechanics = new GameMechanics(this.USC);
+
+    this.gamePlay.drawUi(this.themes);
+    this.gamePlay.redrawPositions(this.allSquad);
+    this.gamePlay.selectCell(this.USC.position);
+    this.onSaveGame();
+  }
+
+  _attack(index, attacker, target, player = 'user') {
+    const valA = attacker.attack - target.defence;
+    const valB = attacker.attack * 0.1;
+    const formula = Math.max(valA, valB);
+    const userCharacterLength = this.computerSquad.length;
+
+    this.gamePlay.showDamage(index, formula);
+
+    if (target.health - formula > 0) {
+      target.health -= formula;
+    } else {
+      if (player === 'user') {
+        this.computerSquad = this.computerSquad.filter(item => item.position !== index);
+      } else {
+        this.userSquad = this.userSquad.filter(item => item.position !== index);
+      }
+
+      this.allSquad = [...this.userSquad, ...this.computerSquad];
+      this.gamePlay.redrawPositions(this.allSquad);
+      this.gamePlay.setCursor('default');
+      this.gamePlay.deselectCell(index);
+    }
+
+    if (this.computerSquad.length === 0) {
+      this._levelUp();
+    }
+
+    if (this.userSquad.length === 0) {
+      GamePlay.showMessage('Game over!!!');
+      this.onNewGame();
+    }
+
+    if (userCharacterLength > this.userSquad.length) {
+      this.gamePlay.deselectCell(this.USC.position);
+      this.selectCharacter = 0;
+      this.USC = this.userSquad[this.selectCharacter];
+      this.gamePlay.selectCell(this.USC.position);
     }
   }
 }
