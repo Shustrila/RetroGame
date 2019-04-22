@@ -2,103 +2,117 @@ import * as utils from '../utils.js';
 
 describe('TESTS: function calcTileType', () => {
   test('top-left', () => {
-    const tileType  = utils.calcTileType(0, 10);
+    const received = utils.calcTileType(0, 10);
+    const expected = 'top-left';
 
-    expect(tileType).toBe('top-left');
+    expect(received).toBe(expected);
   });
 
   test('top-right', () => {
-    const tileType  = utils.calcTileType(9, 10);
+    const received = utils.calcTileType(9, 10);
+    const expected = 'top-right';
 
-    expect(tileType).toBe('top-right');
+    expect(received).toBe(expected);
   });
 
   test('top', () => {
-    const tileType  = utils.calcTileType(5, 10);
+    const received = utils.calcTileType(5, 10);
+    const expected = 'top';
 
-    expect(tileType).toBe('top');
+    expect(received).toBe(expected);
   });
 
   test('bottom-left', () => {
-    const tileType  = utils.calcTileType(90, 10);
+    const received = utils.calcTileType(90, 10);
+    const expected = 'bottom-left';
 
-    expect(tileType).toBe('bottom-left');
+    expect(received).toBe(expected);
   });
 
   test('bottom-right', () => {
-    const tileType  = utils.calcTileType(99, 10);
+    const received = utils.calcTileType(99, 10);
+    const expected = 'bottom-right';
 
-    expect(tileType).toBe('bottom-right');
+    expect(received).toBe(expected);
   });
 
   test('bottom', () => {
-    const tileType  = utils.calcTileType(95, 10);
+    const received = utils.calcTileType(95, 10);
+    const expected = 'bottom';
 
-    expect(tileType).toBe('bottom');
+    expect(received).toBe(expected);
   });
 
   test('left', () => {
-    const tileType  = utils.calcTileType( 50, 10);
+    const received = utils.calcTileType(50, 10);
+    const expected = 'left';
 
-    expect(tileType).toBe('left');
+    expect(received).toBe(expected);
   });
 
   test('right', () => {
-    const tileType  = utils.calcTileType(69, 10);
+    const received = utils.calcTileType(69, 10);
+    const expected = 'right';
 
-    expect(tileType).toBe('right');
+    expect(received).toBe(expected);
   });
 
   test('center', () => {
-    const tileType  = utils.calcTileType(45, 10);
+    const received = utils.calcTileType(45, 10);
+    const expected = 'center';
 
-    expect(tileType).toBe('center');
+    expect(received).toBe(expected);
   });
 });
 
 describe('TESTS: function calcHealthLevel', () => {
   test('critical', () => {
-    const healthLevel = utils.calcHealthLevel(5);
+    const received = utils.calcHealthLevel(5);
+    const expected = 'critical';
 
-    expect(healthLevel).toBe('critical');
+    expect(received).toBe(expected);
   });
 
   test('normal', () => {
-    const healthLevel = utils.calcHealthLevel(45);
+    const received = utils.calcHealthLevel(45);
+    const expected = 'normal';
 
-    expect(healthLevel).toBe('normal');
+    expect(received).toBe(expected);
   });
 
   test('high', () => {
-    const healthLevel = utils.calcHealthLevel(70);
+    const received = utils.calcHealthLevel(70);
+    const expected = 'high';
 
-    expect(healthLevel).toBe('high');
+    expect(received).toBe(expected);
   });
 });
 
 describe('TESTS: function conversionIcon', () => {
   test('parameter not object', () => {
-    const character = () => utils.conversionIcon('');
+    const received = () => utils.conversionIcon('');
+    const expected = 'parameter not object';
 
-    expect(character).toThrow('parameter not object');
+    expect(received).toThrow(expected);
   });
 
   test('parameter not passed', () => {
-    const character = () => utils.conversionIcon();
+    const received = () => utils.conversionIcon();
+    const expected = 'parameter not passed';
 
-    expect(character).toThrow('parameter not passed');
+    expect(received).toThrow(expected);
   });
 
   test('conversion row', () => {
-    const character = utils.conversionIcon({
+    const received = utils.conversionIcon({
       level: 1,
       attack: 10,
       defence: 40,
       health: 70,
       type: 'generic'
     });
-    const expected = "🎖 1 ⚔ 10 🛡 40 ❤ 70";
+    const expected = '🎖 1 ⚔ 10 🛡 40 ❤ 70';
 
-    expect(character).toBe(expected);
+    expect(received).toBe(expected);
   });
 });

@@ -15,6 +15,9 @@
         "class-methods-use-this": "off",
         "no-undef": "off",
         "comma-dangle": "off",
-        "no-multi-spaces": "off"
+        "no-multi-spaces": "off",
+        "consistent-return": "off",
+        "no-loop-func": "off",
+        "arrow-parens": "off"
     }
 }

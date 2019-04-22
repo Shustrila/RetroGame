@@ -1,13 +1,19 @@
-import GameStateService from './GameStateService.js';
+import GameStateService from '../GameStateService.js';
 
-const GameStateService = new GameStateService(localStorage);
+jest.fn('localStorage');
 
-describe('TESTS: GameStateService', () => {
-  test('', () => {
-
+describe('TESTS: class GameStateService', () => {
+  BeforeEach(() => {
+    localStorage.get.mockResolvedValue({
+      data: 'data'
+    });
   });
 
-  test('', () => {
+  test('1', () => {
+    console.log(new GameStateService(localStorage));
+  });
+
+  test('2', () => {
 
   });
 });

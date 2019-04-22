@@ -104,7 +104,6 @@ export default class GameController {
     }
   }
 
-
   _actionComputer() {
     let index = null;
     let mechanics = {};
@@ -115,7 +114,7 @@ export default class GameController {
 
       this.userSquad
         .map(user => user.position)
-        .forEach((item) => {
+        .forEach(item => {
           if (mechanics.allowedAttack.indexOf(item) !== -1) {
             index = i;
             purposes.push(item);

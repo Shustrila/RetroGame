@@ -2,14 +2,15 @@ import Character from '../Character';
 import Daemon from '../characters/Daemon';
 
 describe('TESTS: class Character', () => {
-  test('class caused by using "new"', () => {
-    const character = () => new Character(1);
+  test('class caused by using new', () => {
+    const received = () => new Character(1);
+    const expected = 'class caused by using "new"';
 
-    expect(character).toThrow('class caused by using "new"');
+    expect(received).toThrow(expected);
   });
 
   test('Character called without constructor', () => {
-    const character = new Daemon(1);
+    const received = new Daemon(1);
     const expected = {
       level: 1,
       attack: 10,
@@ -18,6 +19,6 @@ describe('TESTS: class Character', () => {
       type: 'daemon'
     };
 
-    expect(character).toEqual(expected);
+    expect(received).toEqual(expected);
   });
 });
