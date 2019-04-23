@@ -48,6 +48,17 @@ export default class GameController {
     this.onLoadGame();
   }
 
+  _state() {
+    return GameState.from({
+      selectCharacter: this.selectCharacter,
+      nextPlayer: this.nextPlayer,
+      userSquad: this.userSquad,
+      computerSquad: this.computerSquad,
+      level: this.level,
+      themes: this.themes,
+    })
+  }
+
   onNewGame() {
     const user = new User([new Swordsman(1), new Bowman(1)]);
     const computer = new Computer(generateTeam(arrayCharacters, 1, 2));
@@ -64,14 +75,7 @@ export default class GameController {
   }
 
   onSaveGame() {
-    this.stateService.save(GameState.from({
-      selectCharacter: this.selectCharacter,
-      nextPlayer: this.nextPlayer,
-      userSquad: this.userSquad,
-      computerSquad: this.computerSquad,
-      level: this.level,
-      themes: this.themes,
-    }));
+    this.stateService.save(this._state());
   }
 
   onLoadGame() {
@@ -167,11 +171,11 @@ export default class GameController {
     this.USC = this.userSquad[this.selectCharacter];
     this.gameMechanics = new GameMechanics(this.USC);
 
+    GamePlay.showMessage(`${this.level} level!`);
+    this.onSaveGame();
     this.gamePlay.drawUi(this.themes);
     this.gamePlay.redrawPositions(this.allSquad);
     this.gamePlay.selectCell(this.USC.position);
-    GamePlay.showMessage(`${this.level} level!`);
-    this.onSaveGame();
   }
 
   _attack(index, attacker, target, player) {
@@ -267,7 +271,7 @@ export default class GameController {
     }
 
     this.nextPlayer = 'computer';
-    this.onSaveGame();
+    this.onSaveGame()
   }
 
   onCellClick(index)  {
