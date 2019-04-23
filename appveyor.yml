@@ -5,12 +5,12 @@ branches:
     - master # ветка git
 cache: node_modules # кеширование
 install:
-  - yarn install # команда установки зависимостей
+  - npm install # команда установки зависимостей
 build: off
 build_script:
-  - yarn run build # команда сборки
+  - npm run build # команда сборки
 test_script:
-  - yarn run lint # скрипт тестирования
+  - npm run lint # скрипт тестирования
 deploy_script: # скрипт развёртывания
   - git config --global credential.helper store
   - git config --global user.name AppVeyor
