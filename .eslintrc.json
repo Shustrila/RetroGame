@@ -18,6 +18,8 @@
         "no-multi-spaces": "off",
         "consistent-return": "off",
         "no-loop-func": "off",
-        "arrow-parens": "off"
+        "arrow-parens": "off",
+        "arrow-body-style": "off",
+        "semi": "off"
     }
 }

@@ -8,7 +8,7 @@
     "build": "webpack --mode production",
     "test": "jest --coverage .test.js --watch",
     "doc": "jsdoc -c jsdoc.conf.json",
-    "lint": "eslint ."
+    "lint": "eslint ./src"
   },
   "repository": {
     "type": "git",
