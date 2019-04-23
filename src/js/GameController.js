@@ -57,6 +57,7 @@ export default class GameController {
     this.userSquad = user.all;
     this.computerSquad = computer.all;
     this.themes = themes.prairie;
+    this.level = 1;
 
     this.onSaveGame();
     this.onLoadGame();
@@ -169,11 +170,15 @@ export default class GameController {
     this.gamePlay.drawUi(this.themes);
     this.gamePlay.redrawPositions(this.allSquad);
     this.gamePlay.selectCell(this.USC.position);
-    GamePlay.showMessage('New level!');
+    GamePlay.showMessage(`${this.level} level!`);
     this.onSaveGame();
   }
 
-  _attack(index, attacker, target, player = 'user') {
+  _attack(index, attacker, target, player) {
+    if (player !== undefined) {
+      throw new TypeError('unknown parameter');
+    }
+
     const valA = attacker.attack - target.defence;
     const valB = attacker.attack * 0.1;
     const formula = Math.floor(Math.max(valA, valB));
@@ -185,17 +190,19 @@ export default class GameController {
       this.gamePlay.deselectCell(index);
       this.computerSquad = this.computerSquad.filter(item => item.position !== index);
     } else {
+      this.gamePlay.deselectCell(index);
       this.userSquad = this.userSquad.filter(item => item.position !== index);
+
+      if (userCharacterLength > this.userSquad.length) {
+        this.gamePlay.deselectCell(this.USC.position);
+        this.selectCharacter = 0;
+        this.USC = this.userSquad[this.selectCharacter];
+        if (this.userSquad.length > 1) GamePlay.showMessage(`${target.type} kill!`);
+        this.onSaveGame();
+      }
     }
 
     this.allSquad = [...this.userSquad, ...this.computerSquad];
-
-    if (userCharacterLength > this.userSquad.length) {
-      this.gamePlay.deselectCell(this.USC.position);
-      this.selectCharacter = 0;
-      this.USC = this.userSquad[this.selectCharacter];
-      this.onSaveGame();
-    }
 
     this.gamePlay.showDamage(index, formula).then(() => {
       this.gamePlay.selectCell(this.USC.position);
