@@ -207,7 +207,8 @@ export default class GameController {
     this.gamePlay.showDamage(index, formula).then(() => {
       this.gamePlay.selectCell(this.USC.position);
       this.gamePlay.setCursor('default');
-      setTimeout(() => this.gamePlay.redrawPositions(this.allSquad), 0);
+      this.gamePlay.redrawPositions(this.allSquad);
+      if (player === 'user') this._actionComputer();
     });
 
     if (this.computerSquad.length === 0) {
@@ -293,7 +294,6 @@ export default class GameController {
 
         this.gamePlay.deselectCell(index);
         this._attack(index, this.USC.character, target[0].character, 'user');
-        this._actionComputer();
       }
 
       if (user.indexOf(index) !== -1 && this.USC.position !== index) {
