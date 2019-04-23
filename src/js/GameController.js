@@ -175,7 +175,7 @@ export default class GameController {
   }
 
   _attack(index, attacker, target, player) {
-    if (player !== undefined) {
+    if (player === undefined) {
       throw new TypeError('unknown parameter');
     }
 
@@ -197,7 +197,7 @@ export default class GameController {
         this.gamePlay.deselectCell(this.USC.position);
         this.selectCharacter = 0;
         this.USC = this.userSquad[this.selectCharacter];
-        if (this.userSquad.length > 1) GamePlay.showMessage(`${target.type} kill!`);
+        if (this.userSquad.length !== 0) GamePlay.showMessage(`${target.type} kill!`);
         this.onSaveGame();
       }
     }
@@ -269,7 +269,7 @@ export default class GameController {
     this.onSaveGame();
   }
 
-  onCellClick(index) {
+  onCellClick(index)  {
     // TODO: react to click
     const state = this.stateService.load();
 
